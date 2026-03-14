@@ -11,11 +11,23 @@
 // by yielding execution voluntarily.
 
 class Scheduler {
-  constructor() {}
-
-  schedule(task, priority = 0) {}
-
-  run(onAllFinished) {}
+  constructor() {
+    this.queue = [];
+  }
+  schedule(task, priority = 0) {
+    this.queue.push({ task, priority });
+    this.queue.sort((a, b) => b.priority - a.priority);
+  }
+  run(onAllFinished) {
+    if (this.queue.length === 0) {
+      return onAllFinished(null);
+    }
+    const { task } = this.queue.shift();
+    task((err) => {
+      if (err) return onAllFinished(err);
+      this.run(onAllFinished);
+    });
+  }
 }
 
 module.exports = Scheduler;
