@@ -7,6 +7,18 @@
 // This problem tests deduplication and state synchronization.
 //
 
-function createIdempotentExecutor() {}
+function createIdempotentExecutor() {
+  let res = new Map();
+  return function(key, fn) {
+    if (res.has(key)) {
+      return res.get(key);
+    }
+    const promise = fn().finally(() => {
+      res.delete(key);
+    });
+    res.set(key, promise);
+    return promise;
+  };
+}
 
 module.exports = createIdempotentExecutor;

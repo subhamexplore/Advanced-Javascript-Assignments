@@ -8,6 +8,11 @@
 //
 // It must resolve with an object:
 // { winner: <key>, value: <resolved value> }
-async function raceWithMetadata(promiseMap) { }
+async function raceWithMetadata(promiseMap) { 
+    const res = Object.entries(promiseMap).map(([key, promise])=>{
+        return Promise.resolve(promise).then((value)=>({winner: key, value: value}))
+    })
+    return Promise.race(res)
+}
 
 module.exports = raceWithMetadata;

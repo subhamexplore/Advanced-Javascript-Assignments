@@ -5,7 +5,14 @@
 // The evaluation should stop immediately and resolve to false as soon as any predicate fails.
 
 
-async function everyAsync(array, predicate) {}
+async function everyAsync(array, predicate) {
+    for(let i=0; i<array.length; i++){
+        const res = await predicate(array[i])
+        if(!res)
+            return false
+    }
+    return true
+}
 
 module.exports = everyAsync;
 

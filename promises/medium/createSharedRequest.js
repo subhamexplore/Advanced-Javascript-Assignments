@@ -1,4 +1,3 @@
-
 // Problem Description – Promise Shared Cache (Thundering Herd Prevention)
 //
 // You are given an async function apiCallFn.
@@ -7,6 +6,15 @@
 // The first call should trigger apiCallFn.
 // If called again while the request is still pending, return the same promise.
 // Once it resolves or rejects, the next call should start a new request.
-function createSharedRequest(apiCallFn) { }
+function createSharedRequest(apiCallFn) {
+  let res = null;
+  return function () {
+    if (res) return res;
+    res = apiCallFn().finally(() => {
+      res = null;
+    });
+    return res;
+  };
+}
 
 module.exports = createSharedRequest;
