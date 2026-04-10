@@ -11,6 +11,18 @@
 // 2. Always trigger fetchFn() to refresh and update the cache
 // 3. If cache is empty, wait for fetchFn() and return its result
 
-async function swrCache(key, fetchFn) { }
+let cache = new Map()
+async function swrCache(key, fetchFn) {
+    if(cache.has(key)){
+        const cacheCal = cache.get(key)
+        fetchFn()
+        .then(data=>cache.set(key, data))
+        .catch(err=>err)
+        return cacheCal
+    }
+    const data = await fetchFn()
+    cache.set(key, data)
+    return data
+}
 
 module.exports = swrCache;
