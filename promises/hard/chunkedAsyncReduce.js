@@ -1,4 +1,3 @@
-
 // Problem Description – Non-Blocking Heavy Reducer (Chunked Async Reduce)
 //
 // You are given a very large array of numbers and a hash function.
@@ -13,6 +12,24 @@
 // 3. Return a single Promise that resolves with the final result
 // 4. Use setImmediate or MessageChannel for yielding (not setTimeout)
 //
-async function chunkedAsyncReduce(data, hashFn, chunkSize) { }
+async function chunkedAsyncReduce(data, hashFn, chunkSize) {
+  return new Promise((resolve) => {
+    if (data.length === 0) return undefined;
+    let i = 1;
+    let result = data[0];
+    function processChunk() {
+      const end = Math.min(i + chunkSize, data.length);
+      for (; i < end; i++) {
+        result = hashFn(result, data[i]);
+      }
+      if (i < data.length) {
+        setImmediate(processChunk);
+      } else {
+        resolve(result);
+      }
+    }
+    processChunk();
+  });
+}
 
 module.exports = chunkedAsyncReduce;

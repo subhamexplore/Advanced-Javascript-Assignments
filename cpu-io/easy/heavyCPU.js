@@ -8,6 +8,8 @@
 // (such as timers or async callbacks) from running until it completes.
 
 
-function heavyCPU(iterations) {}
+function heavyCPU(iterations) {
+    
+}
 
 module.exports = heavyCPU;

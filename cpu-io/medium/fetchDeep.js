@@ -1,11 +1,25 @@
-
 // Problem Description – Recursive Fetch with Redirect Handling
 
-// You are required to fetch data for a given set of IDs. 
-// Each response may contain a redirectId, indicating that the data should be fetched again using the new ID. 
-// The process must continue until the final data is reached. 
+// You are required to fetch data for a given set of IDs.
+// Each response may contain a redirectId, indicating that the data should be fetched again using the new ID.
+// The process must continue until the final data is reached.
 // Your implementation should also detect and prevent infinite redirect loops.
 
-async function fetchDeep(ids, fetcher, maxDepth = 5) {}
+async function fetchDeep(ids, fetcher, maxDepth = 5) {
+  async function fetchOne(id, depth) {
+    if (depth > maxDepth)
+      throw new Error(`Max redirect depth exceeded for id: ${id}`);
+    const res = await fetcher(id);
+    if (res.redirectId) return fetchOne(res.redirectId, depth + 1);
+    return res;
+  }
+  const entries = Object.entries(ids);
+  const results = await Promise.all(
+    entries.map(([key, id]) => 
+      fetchOne(id, 0).then((data) => [key, data])
+    )
+  );
+  return Object.fromEntries(results);
+}
 
 module.exports = fetchDeep;

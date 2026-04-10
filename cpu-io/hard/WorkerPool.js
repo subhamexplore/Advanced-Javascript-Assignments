@@ -13,12 +13,49 @@
 // This pattern is commonly used to prevent overload in high-throughput systems.
 
 class WorkerPool {
-  constructor(limit, maxQueue) {}
+  constructor(limit, maxQueue) {
+    this.limit = limit;
+    this.maxQueue = maxQueue;
+    this.queue = [];
+    this.running = 0;
+  }
 
-  enqueue(task) {}
+  enqueue(task) {
+    if (this.maxQueue === 0) {
+      return Promise.reject(new Error("Queue is full"));
+    }
+    // ✅ Free slot → run right away
+    if (this.running < this.limit) {
+      return new Promise((resolve, reject) => {
+        this.queue.push({ task, resolve, reject });
+        this.run();
+      });
+    }
 
-  run() {}
+    if (this.queue.length >= this.maxQueue) {
+      return Promise.reject(new Error("Queue is full"));
+    }
+
+    return new Promise((resolve, reject) => {
+      this.queue.push({ task, resolve, reject });
+    });
+  }
+
+  run() {
+    while (this.running < this.limit && this.queue.length > 0) {
+      this.running++;
+      const { task, resolve, reject } = this.queue.shift();
+      Promise.resolve(
+        task()
+          .then(resolve)
+          .catch(reject)
+          .finally(() => {
+            this.running--;
+            this.run();
+          }),
+      );
+    }
+  }
 }
 
-  
-  module.exports = WorkerPool;
+module.exports = WorkerPool;

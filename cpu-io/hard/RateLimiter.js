@@ -17,9 +17,37 @@
 // This is a common pattern for API rate limiting and resource management.
 
 class RateLimiter {
-  constructor(limit, windowMs) {}
+  constructor(limit, windowMs) {
+    this.limit = limit
+    this.windowMs = windowMs
+    this.queue = []
+    this.timestamps = []
+  }
 
-  async throttle(task) {}
+  async throttle(task) {
+    return new Promise((resolve, reject)=>{
+      this.queue.push({task, resolve, reject})
+      this.process()
+    })
+  }
+  process(){
+    if(this.queue.length===0) return;
+    const now = Date.now()
+    this.timestamps = this.timestamps.filter(t => now - t < this.windowMs)
+    if(this.timestamps.length<this.limit){
+      this.timestamps.push(Date.now())
+      const {task, resolve, reject} = this.queue.shift()
+      Promise.resolve(task())
+      .then(resolve)
+      .catch(reject)
+      this.process()
+    }else{
+      const wait = this.windowMs - (now - this.timestamps[0])
+      setTimeout(() => {
+        this.process()
+      }, wait);
+    }
+  }
 }
 
 module.exports = RateLimiter;
